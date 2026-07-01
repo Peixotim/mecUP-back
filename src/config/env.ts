@@ -4,6 +4,9 @@ import { z } from 'zod'
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
+  // Nível mínimo de log. Se não informado, cai no default por ambiente mais abaixo.
+  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
+
   API_PORT: z.coerce
     .number({ message: 'API_PORT must be a valid number' })
     .int('API_PORT must be an integer')
@@ -53,9 +56,22 @@ const envSchema = z.object({
     .positive('REDIS_PORT must be a positive number')
     .default(6379),
   REDIS_URL: z.url('REDIS_URL must be a valid connection URL'),
+
+  // Rate limit: janela em segundos e número máximo de requisições por janela/IP
+  RATE_LIMIT_WINDOW: z.coerce
+    .number({ message: 'RATE_LIMIT_WINDOW must be a valid number' })
+    .int('RATE_LIMIT_WINDOW must be an integer')
+    .positive('RATE_LIMIT_WINDOW must be a positive number')
+    .default(60),
+  RATE_LIMIT_MAX: z.coerce
+    .number({ message: 'RATE_LIMIT_MAX must be a valid number' })
+    .int('RATE_LIMIT_MAX must be an integer')
+    .positive('RATE_LIMIT_MAX must be a positive number')
+    .default(100),
 })
 
-export type Env = z.infer<typeof envSchema>
+type RawEnv = z.infer<typeof envSchema>
+export type Env = Omit<RawEnv, 'LOG_LEVEL'> & { LOG_LEVEL: NonNullable<RawEnv['LOG_LEVEL']> }
 
 const parsed = envSchema.safeParse(process.env)
 
@@ -73,4 +89,10 @@ if (!parsed.success) {
   )
 }
 
-export const env: Env = parsed.data
+// Default de log por ambiente: mais verboso em dev, enxuto em produção.
+const defaultLogLevel = parsed.data.NODE_ENV === 'production' ? 'info' : 'debug'
+
+export const env: Env = {
+  ...parsed.data,
+  LOG_LEVEL: parsed.data.LOG_LEVEL ?? defaultLogLevel,
+}
