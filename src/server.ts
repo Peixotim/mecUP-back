@@ -52,7 +52,8 @@ function setupGracefulShutdown(server: Server): void {
 }
 
 export async function startServer(): Promise<Server> {
-  await Promise.all([connectRedis(), connectPostgres()])
+  await connectRedis()
+  await connectPostgres()
 
   const app = createApp()
   const server = http.createServer(app)
