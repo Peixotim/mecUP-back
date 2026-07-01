@@ -1,17 +1,19 @@
+import 'reflect-metadata'
+
 import { once } from 'node:events'
 import http from 'node:http'
 import type { Server } from 'node:http'
 import { promisify } from 'node:util'
 
 import { env } from '@config/env'
+import { connectPostgres, disconnectPostgres } from '@database/data-source/postgres'
+import { logger } from '@shared/logger/logger'
+import { connectRedis, disconnectRedis } from '@shared/redis/redis'
 
 import { createApp } from './app'
 
-// Tempo máximo (ms) que esperamos as conexões em andamento fecharem antes de forçar a saída.
 const SHUTDOWN_TIMEOUT_MS = 10_000
 
-// Encerramento ordeiro: para de aceitar novas conexões, espera as em andamento
-// terminarem e só então sai. Um timeout de segurança evita ficar pendurado para sempre.
 function setupGracefulShutdown(server: Server): void {
   const closeServer = promisify<void>(server.close.bind(server))
   let shuttingDown = false
@@ -21,10 +23,10 @@ function setupGracefulShutdown(server: Server): void {
       return
     }
     shuttingDown = true
-    console.info(`\n${signal} received. Closing server gracefully...`)
+    logger.info(`${signal} received. Closing server gracefully...`)
 
     const forceExit = setTimeout(() => {
-      console.error(`Could not close connections in ${SHUTDOWN_TIMEOUT_MS}ms. Forcing shutdown.`)
+      logger.error(`Could not close connections in ${SHUTDOWN_TIMEOUT_MS}ms. Forcing shutdown.`)
       process.exit(1)
     }, SHUTDOWN_TIMEOUT_MS)
 
@@ -33,14 +35,12 @@ function setupGracefulShutdown(server: Server): void {
     try {
       await closeServer()
 
-      // Aqui entram os fechamentos de recursos no futuro:
-      //   await AppDataSource.destroy() (TypeORM)
-      //   await redis.quit() (Redis)
+      await Promise.all([disconnectRedis(), disconnectPostgres()])
 
-      console.info('Server closed successfully.')
+      logger.info('Server closed successfully.')
       process.exit(0)
     } catch (error) {
-      console.error('Error while closing server:', error)
+      logger.error({ err: error }, 'Error while closing server')
       process.exit(1)
     } finally {
       clearTimeout(forceExit)
@@ -52,9 +52,7 @@ function setupGracefulShutdown(server: Server): void {
 }
 
 export async function startServer(): Promise<Server> {
-  // Aqui entram as conexões de infraestrutura no futuro:
-  //   await AppDataSource.initialize() (TypeORM)
-  //   await redis.connect() (Redis)
+  await Promise.all([connectRedis(), connectPostgres()])
 
   const app = createApp()
   const server = http.createServer(app)
@@ -62,7 +60,7 @@ export async function startServer(): Promise<Server> {
   server.listen(env.API_PORT)
   await once(server, 'listening')
 
-  console.info(`Server is running on port ${env.API_PORT}`)
+  logger.info(`Server is running on port ${env.API_PORT}`)
 
   setupGracefulShutdown(server)
 
@@ -73,7 +71,7 @@ async function bootstrap(): Promise<void> {
   try {
     await startServer()
   } catch (error) {
-    console.error('Failed to start application:', error)
+    logger.error({ err: error }, 'Failed to start application')
     process.exit(1)
   }
 }
