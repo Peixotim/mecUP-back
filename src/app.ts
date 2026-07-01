@@ -7,6 +7,8 @@ import helmet from 'helmet'
 
 import { env } from '@config/env'
 import { errorHandler } from '@shared/middlewares/error-handler.middleware'
+import { rateLimitHandler } from '@shared/middlewares/rate-limit-handler.middleware'
+import { requestLogger } from '@shared/middlewares/request-logger.middleware'
 
 import routes from './routes'
 
@@ -39,6 +41,8 @@ export function createApp(): Express {
 
   app.set('trust proxy', parseTrustProxy(env.TRUST_PROXY))
 
+  app.use(requestLogger)
+
   app.use(
     helmet({
       contentSecurityPolicy: {
@@ -60,6 +64,7 @@ export function createApp(): Express {
 
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
+  app.use(rateLimitHandler)
   app.use(routes)
   app.use(errorHandler)
 
