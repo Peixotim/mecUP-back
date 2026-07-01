@@ -63,6 +63,10 @@ export class AppError extends Error {
     return new AppError(message, 422, 'UNPROCESSABLE_ENTITY')
   }
 
+  static tooManyRequests(message = 'Too many requests'): AppError {
+    return new AppError(message, 429, 'TOO_MANY_REQUESTS')
+  }
+
   static internal(message = 'Internal server error'): AppError {
     return new AppError(message, 500, 'INTERNAL_SERVER_ERROR')
   }
