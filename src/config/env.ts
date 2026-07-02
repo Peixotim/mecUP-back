@@ -68,6 +68,13 @@ const envSchema = z.object({
     .int('RATE_LIMIT_MAX must be an integer')
     .positive('RATE_LIMIT_MAX must be a positive number')
     .default(100),
+
+  // Tamanho máximo do pool de conexões do Postgres. Opcional — cai no default 10 no data-source.
+  DB_POOL_MAX: z.coerce
+    .number({ message: 'DB_POOL_MAX must be a valid number' })
+    .int('DB_POOL_MAX must be an integer')
+    .positive('DB_POOL_MAX must be a positive number')
+    .optional(),
 })
 
 type RawEnv = z.infer<typeof envSchema>
