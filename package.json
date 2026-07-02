@@ -12,6 +12,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typeorm": "tsx ./node_modules/typeorm/cli.js",
+    "migration:generate": "tsx scripts/migration.ts generate",
+    "migration:create": "tsx scripts/migration.ts create",
+    "migration:run": "tsx ./node_modules/typeorm/cli.js migration:run -d src/database/data-source/postgres.ts",
+    "migration:revert": "tsx ./node_modules/typeorm/cli.js migration:revert -d src/database/data-source/postgres.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "prepare": "husky"
   },
