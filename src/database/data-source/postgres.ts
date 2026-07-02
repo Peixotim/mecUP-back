@@ -10,10 +10,10 @@ export const AppDataSource = new DataSource({
   password: env.POSTGRES_PASSWORD,
   database: env.POSTGRES_DB,
   synchronize: false,
-  logging: false,
-  entities: [],
-  migrations: [],
-  extra: { connectionTimeoutMillis: 5_000 },
+  logging: env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+  entities: ['src/modules/**/*.entity.{ts,js}'],
+  migrations: ['src/database/migrations/*.{ts,js}'],
+  extra: { max: env.DB_POOL_MAX ?? 10, connectionTimeoutMillis: 5000 },
 })
 
 export async function connectPostgres(): Promise<void> {
