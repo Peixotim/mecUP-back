@@ -66,5 +66,14 @@ export default tseslint.config(
     },
   },
 
+  // Scripts de tooling (fora do projeto TS de `src`): sem type-aware linting.
+  {
+    files: ['scripts/**/*.ts'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
+
   prettier,
 )
