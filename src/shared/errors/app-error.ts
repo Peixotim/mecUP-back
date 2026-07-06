@@ -9,8 +9,14 @@ export class AppError extends Error {
   public readonly timestamp: string
   public readonly details?: ErrorDetail[]
 
-  constructor(message: string, statusCode = 400, code = 'BAD_REQUEST', details?: ErrorDetail[]) {
-    super(message)
+  constructor(
+    message: string,
+    statusCode = 400,
+    code = 'BAD_REQUEST',
+    details?: ErrorDetail[],
+    cause?: unknown,
+  ) {
+    super(message, cause !== undefined ? { cause } : undefined)
     this.statusCode = statusCode
     this.code = code
     this.timestamp = new Date().toISOString()
@@ -73,6 +79,20 @@ export class AppError extends Error {
 
   static databaseError(message = 'Database communication error'): AppError {
     return new AppError(message, 500, 'DATABASE_ERROR')
+  }
+
+  static passwordHashFailed(cause?: unknown): AppError {
+    return new AppError('Failed to hash password', 500, 'PASSWORD_HASH_FAILED', undefined, cause)
+  }
+
+  static passwordVerifyFailed(cause?: unknown): AppError {
+    return new AppError(
+      'Failed to verify password',
+      500,
+      'PASSWORD_VERIFY_FAILED',
+      undefined,
+      cause,
+    )
   }
 
   toJSON(): object {
