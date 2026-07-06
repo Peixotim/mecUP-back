@@ -4,11 +4,11 @@ import { runWithTenant } from '@shared/database/tenant-context'
 import { AppError } from '@shared/errors/app-error'
 
 export function tenantContext(req: Request, _res: Response, next: NextFunction): void {
-  const oficinaId = req.oficinaId
+  const workshopId = req.workshopId
 
-  if (!oficinaId) {
+  if (!workshopId) {
     throw AppError.unauthorized('Tenant context missing')
   }
 
-  runWithTenant(oficinaId, next)
+  runWithTenant(workshopId, next)
 }

@@ -5,7 +5,7 @@ declare global {
     interface Request {
       id: string
       log: Logger
-      oficinaId?: string
+      workshopId?: string
     }
   }
 }

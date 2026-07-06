@@ -9,7 +9,7 @@ import type {
 
 import { AppError } from '@shared/errors/app-error'
 
-import { currentOficinaId } from './tenant-context'
+import { currentWorkshopId } from './tenant-context'
 
 type ScopedManyOptions<T> = Omit<FindManyOptions<T>, 'where'> & {
   where?: FindOptionsWhere<T>
@@ -23,7 +23,7 @@ export abstract class TenantRepository<T extends ObjectLiteral> {
   protected constructor(protected readonly repo: Repository<T>) {}
 
   protected scopedWhere(where?: FindOptionsWhere<T>): FindOptionsWhere<T> {
-    return { ...(where ?? {}), oficinaId: currentOficinaId() } as unknown as FindOptionsWhere<T>
+    return { ...(where ?? {}), workshopId: currentWorkshopId() } as unknown as FindOptionsWhere<T>
   }
 
   private byId(id: string): FindOptionsWhere<T> {
@@ -63,7 +63,7 @@ export abstract class TenantRepository<T extends ObjectLiteral> {
   create(data: DeepPartial<T>): Promise<T> {
     const entity = this.repo.create({
       ...data,
-      oficinaId: currentOficinaId(),
+      workshopId: currentWorkshopId(),
     } as DeepPartial<T>)
 
     return this.repo.save(entity)
@@ -74,7 +74,7 @@ export abstract class TenantRepository<T extends ObjectLiteral> {
 
     const safe = { ...(data as Record<string, unknown>) }
     delete safe.id
-    delete safe.oficinaId
+    delete safe.workshopId
     this.repo.merge(entity, safe as DeepPartial<T>)
 
     return this.repo.save(entity)

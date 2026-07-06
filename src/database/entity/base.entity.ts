@@ -16,6 +16,6 @@ export abstract class BaseEntity {
 
 export abstract class TenantEntity extends BaseEntity {
   @Index()
-  @Column({ name: 'oficina_id', type: 'uuid' })
-  oficinaId!: string
+  @Column({ name: 'workshop_id', type: 'uuid' })
+  workshopId!: string
 }

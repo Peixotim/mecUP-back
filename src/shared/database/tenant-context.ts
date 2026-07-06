@@ -3,25 +3,25 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { AppError } from '@shared/errors/app-error'
 
 interface TenantContext {
-  oficinaId: string
+  workshopId: string
 }
 
 export const tenantStore = new AsyncLocalStorage<TenantContext>()
 
-export function runWithTenant<T>(oficinaId: string, callback: () => T): T {
-  return tenantStore.run({ oficinaId }, callback)
+export function runWithTenant<T>(workshopId: string, callback: () => T): T {
+  return tenantStore.run({ workshopId }, callback)
 }
 
-export function tryGetOficinaId(): string | undefined {
-  return tenantStore.getStore()?.oficinaId
+export function tryGetWorkshopId(): string | undefined {
+  return tenantStore.getStore()?.workshopId
 }
 
-export function currentOficinaId(): string {
+export function currentWorkshopId(): string {
   const ctx = tenantStore.getStore()
 
   if (!ctx) {
     throw AppError.internal('Tenant context missing')
   }
 
-  return ctx.oficinaId
+  return ctx.workshopId
 }
