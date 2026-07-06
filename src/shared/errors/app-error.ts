@@ -41,6 +41,10 @@ export class AppError extends Error {
     return new AppError(message, 401, 'INVALID_TOKEN')
   }
 
+  static tokenExpired(message = 'Token expired'): AppError {
+    return new AppError(message, 401, 'TOKEN_EXPIRED')
+  }
+
   static invalidCredentials(message = 'Invalid credentials'): AppError {
     return new AppError(message, 401, 'INVALID_CREDENTIALS')
   }
