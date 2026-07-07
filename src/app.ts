@@ -10,7 +10,7 @@ import { errorHandler } from '@shared/middlewares/error-handler.middleware'
 import { rateLimitHandler } from '@shared/middlewares/rate-limit-handler.middleware'
 import { requestLogger } from '@shared/middlewares/request-logger.middleware'
 
-import routes from './routes'
+import { createRoutes } from './routes'
 
 const corsOptions: CorsOptions = {
   origin: env.FRONTEND_URL,
@@ -65,7 +65,7 @@ export function createApp(): Express {
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
   app.use(rateLimitHandler)
-  app.use(routes)
+  app.use(createRoutes())
   app.use(errorHandler)
 
   return app
